@@ -52,7 +52,9 @@ public class Unificator {
     
     boolean unifyNumber(Number rule, Argument query) {
         String queryClassName=query.getClass().getSimpleName();
-        
+        //switch (queryClassName) {
+          //  case "Number":
+        //}
         return false;
     }
     
