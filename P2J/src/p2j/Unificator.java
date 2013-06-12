@@ -59,6 +59,7 @@ public class Unificator {
     }
     
     boolean unifyArgString(ArgString rule, Argument query) {
+        String queryClassName=query.getClass().getSimpleName();
         return false;
     }
     
