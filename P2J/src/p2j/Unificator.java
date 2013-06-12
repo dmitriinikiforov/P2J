@@ -51,6 +51,8 @@ public class Unificator {
     }
     
     boolean unifyNumber(Number rule, Argument query) {
+        String queryClassName=query.getClass().getSimpleName();
+        
         return false;
     }
     
