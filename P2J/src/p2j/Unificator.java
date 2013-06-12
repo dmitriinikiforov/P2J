@@ -26,23 +26,25 @@ public class Unificator {
     }
     
     public boolean unify(Statement rule, Statement query) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //самое интересное здесь
+        return false;
     }
     public boolean unify(Argument rule, Argument query) {
-        String classNameRule = rule.getClass().getSimpleName();
-        if (classNameRule.equals("Structure")) {
-            return unifyStructure((Structure) rule, query);
-        } else if (classNameRule.equals("Number")) {
-            return unifyNumber((Number) rule, query);
-        } else if (classNameRule.equals("Variable")) {
-            return unifyVariable((Variable) rule, query); 
-        } else if (classNameRule.equals("List")) {
-            return unifyList((List) rule, query);
-        } else if (classNameRule.equals("ArgString")) {
-            return unifyArgString((ArgString) rule, query);
-        } else {
-            return false;
+        String ruleClassName = rule.getClass().getSimpleName();
+        switch (ruleClassName) {
+            case "Number":
+                return unifyNumber((Number) rule, query);
+            case "Structure":
+                return unifyStructure((Structure) rule, query);
+            case "Variable":
+                return unifyVariable((Variable) rule, query); 
+            case "List":
+                return unifyList((List) rule, query);
+            case "ArgString":
+                return unifyArgString((ArgString) rule, query);
         }
+        System.out.println("Unexpectively!");
+        return false;
     }
     
     
@@ -52,14 +54,27 @@ public class Unificator {
     
     boolean unifyNumber(Number rule, Argument query) {
         String queryClassName=query.getClass().getSimpleName();
-        //switch (queryClassName) {
-          //  case "Number":
-        //}
+        switch (queryClassName) {
+            case "Number":
+                Number qNum=(Number) query;
+                return qNum.value==rule.value;
+            case "Variable":
+                //Добавить переменную в стэк
+                return true;
+        }
         return false;
     }
     
     boolean unifyArgString(ArgString rule, Argument query) {
         String queryClassName=query.getClass().getSimpleName();
+        switch (queryClassName) {
+            case "ArgString":
+                ArgString qArgString=(ArgString) query;
+                return qArgString.string.equals(rule.string);
+            case "Variable":
+                //Добавить переменную в стек
+                return true; 
+        }
         return false;
     }
     
