@@ -21,6 +21,8 @@ public class P2J {
         for (Statement st:program) {
             System.out.println(st.toString());
         }
+        
+        Unificator unificator = new Unificator();
 //        pl=new PrologLexer((CharStream) new ANTLRFileStream(args[1])); 
 //        pp=new PrologParser(new CommonTokenStream(pl));
 //        listener=new Listener();
@@ -28,5 +30,7 @@ public class P2J {
 //        pp.program();
 //        System.out.println(Statement.unify(program,query));
         //output vars
+        boolean result = unificator.unifyProgram(program, query.left);
+        System.out.println(result);
     }
 }
