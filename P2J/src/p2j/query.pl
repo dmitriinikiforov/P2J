@@ -1,0 +1,1 @@
+ishello(['hi','hello','hello']).

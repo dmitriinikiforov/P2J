@@ -10,6 +10,17 @@ import p2j.PrologParser.StructureContext;
 class Structure extends Argument {
     String functor;
     ArrayList<Argument> args;
+    
+    Structure(String functor) {
+        this.functor=functor;
+    }
+    void addArgument (Argument arg) {
+        if (args==null) {
+            args=new ArrayList<Argument>();            
+        }
+        args.add(arg);
+    }
+    
     Structure (StructureContext ctx) {
         functor=ctx.FUNCTOR().getText();
         args=new ArrayList<Argument>();

@@ -10,7 +10,9 @@ import p2j.PrologParser.TailContext;
 
 public class List extends Argument {
     LinkedList<Argument> args;
-    
+    List(LinkedList<Argument> list) {
+        args=(LinkedList<Argument>) list.clone();
+    }
     List(ListContext ctx) {
         args=new LinkedList<Argument>();
             int chNum=ctx.getChildCount();
@@ -21,7 +23,7 @@ public class List extends Argument {
                     if (className.equals("TailContext")) {
                         ParseTree pt = ch.getChild(1);
                         className = pt.getClass().getSimpleName();   
-                                System.out.println("* * *");
+//                                System.out.println("* * *");
                         if (className.equals("TerminalNodeImpl")) {
                             TerminalNode td=(TerminalNode) pt;
                             Token t=td.getSymbol();

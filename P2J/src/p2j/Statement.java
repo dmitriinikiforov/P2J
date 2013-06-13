@@ -40,8 +40,8 @@ class Statement {
         if (right==null) return sb.append(".").toString();
         sb.append(":-");
         for (Structure str: right) {
+            sb.append(" ");
             sb.append(str.toString());
-            sb.append(",");
         }
         sb.append(".");
         return sb.toString();

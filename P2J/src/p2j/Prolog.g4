@@ -7,9 +7,7 @@ list: LIST_BEGIN (argument (AND argument)* tail?)? LIST_END;
 tail: LIST_LINE (VARIABLE|list);
 
 VARIABLE: (UPPERCASE|'_') (LOWERCASE|UPPERCASE|DIGIT|'_')*; //1
-FUNCTOR: LOWERCASE (LOWERCASE|UPPERCASE|DIGIT|'_')*         //2
-        //| DOT
-        ;
+FUNCTOR: LOWERCASE (LOWERCASE|UPPERCASE|DIGIT|'_')*;        //2
 NUMBER: DIGIT+ (DOT DIGIT+)? EXPONENT? 
         | DOT DIGIT+ EXPONENT?;                             //3
 EXPONENT: ('e'('x''p')?|'E'('x''p')?)('+'|'-')? DIGIT+;     //4
@@ -21,10 +19,8 @@ LOWERCASE: [a-z];                                           //9
 UPPERCASE: [A-Z];                                           //10
 DIGIT: [0-9];                                               //11
 ANONIMUS: '_';                                              //12
-//FREE: LOWERCASE|UPPERCASE|DIGIT|'_';
 STRING:  '"' (~('"'))*  '"'
-      | '\'' (~('\''))* '\''
-    ;                                                       //13
+      | '\'' (~('\''))* '\'';                               //13
 LEFT_BRACE: '(';             
 RIGHT_BRACE: ')';
 LIST_BEGIN: '[';
