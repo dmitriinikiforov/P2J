@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 public class P2J {
         static ArrayList<Statement> program;
         static Statement curStatement;
-        static Statement query;
+        static Structure query;
         
     public static void main(String[] args) throws IOException {
         PrologLexer pl=new PrologLexer((CharStream) new ANTLRFileStream(args[0])); 
@@ -21,16 +21,21 @@ public class P2J {
         for (Statement st:program) {
             System.out.println(st.toString());
         }
+        System.out.println();
         
-        Unificator unificator = new Unificator();
-//        pl=new PrologLexer((CharStream) new ANTLRFileStream(args[1])); 
-//        pp=new PrologParser(new CommonTokenStream(pl));
-//        listener=new Listener();
-//        pp.addParseListener(listener);
-//        pp.program();
-//        System.out.println(Statement.unify(program,query));
+        pl=new PrologLexer((CharStream) new ANTLRFileStream(args[1])); 
+        pp=new PrologParser(new CommonTokenStream(pl));
+        QueryListener qListener=new QueryListener();
+        pp.addParseListener(qListener);
+        pp.program();
+        System.out.println(query+"\n");
         //output vars
-        boolean result = unificator.unifyProgram(program, query.left);
+        Unificator unificator = new Unificator(query);
+        Unificator.setProgram(program);
+        boolean result = unificator.unifyProgram();
+        if (result) {
+            System.out.println("***\n"+unificator.getMap());
+        }
         System.out.println(result);
     }
 }
