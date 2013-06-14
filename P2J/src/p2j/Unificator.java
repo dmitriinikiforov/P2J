@@ -2,10 +2,8 @@
 package p2j;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Stack;
 
 
 public class Unificator {
@@ -19,6 +17,7 @@ public class Unificator {
      
      public Unificator(Structure query) {
          map = new HashMap<String, Argument>();
+         
          this.query = query;
      }
 
@@ -28,10 +27,12 @@ public class Unificator {
      
     public boolean unifyProgram() {
         for (Statement rule : program) {
-            System.out.println(rule+" *** "+query);            
+            System.out.println("*** "+map+" *** "+rule+" *** "+query);            
             if (unifyStatement(rule, query)) {
                 System.out.println("Unified statement success: "+toString());
                 return true;
+            } else {
+                map.clear();
             }
         }
         return false;
@@ -47,34 +48,32 @@ public class Unificator {
             for (Structure rightStructure : rule.right) {
                 list.add(replaceVariables(rightStructure));
             }
-//            System.out.println("before clearinig "+map);
-//            Collection<String> keySet=map.keySet();
-//            HashMap<String,Argument> myMap=(HashMap<String,Argument>) map.clone();
-//            for (String key:keySet) {
-//                if (!map.get(key).getClass().getSimpleName().equals("Variable")) myMap.remove(key);
-//                
-//            }
-//            map=myMap;
-//            System.out.println("after clearinig "+map);
             for (Structure rightStructure : list) {
                 Unificator newUnificator = new Unificator(rightStructure);
                 ok = newUnificator.unifyProgram();
-                System.out.println("======     "+newUnificator.map);
+                System.out.println("======  Un   "+newUnificator.map);
                 if (!ok) return false;
                 tempMap = resolve(tempMap, newUnificator.getMap());
                 if (tempMap==null) return false;
+                
             }
-            map =resolve(map,tempMap);
+            
+            map =resolveUp(map,tempMap);
+            //map = resolve(map, resolveUp(map,tempMap));
             if (map==null) return false;
             //filterMap();
-            
+            for (String key : tempMap.keySet()) {
+                if (!map.containsKey(key)) {
+                    map.put(key, tempMap.get(key));
+                }
+            }
             return ok;   
         }
         return false;
     }
     
     public static HashMap<String, Argument> resolve(HashMap<String, Argument> prevMap, HashMap<String, Argument> laterMap) {
-        System.out.println("*** prev: "+prevMap+" later: "+laterMap+" ***");
+//        System.out.println("*** prev: "+prevMap+" later: "+laterMap+" ***");
         HashMap<String, Argument> newMap = (HashMap<String, Argument>) prevMap.clone();
         for (String s : laterMap.keySet()) {
             if (newMap.containsKey(s)) {
@@ -87,14 +86,87 @@ public class Unificator {
             }
         }
         prevMap = newMap;
-        System.out.println("*** prev: "+prevMap+" later: "+laterMap+" *** end method");
+//        System.out.println("*** prev: "+prevMap+" later: "+laterMap+" *** end method");
         return prevMap;
     }
     
-    public static boolean resolveUp(HashMap<String, Argument> upMap, HashMap<String, Argument> downMap) {
+    static boolean pulled;
+    public HashMap<String, Argument> resolveUp(HashMap<String, Argument> upMap, HashMap<String, Argument> downMap) {
         
+        HashMap<String, Argument> tempMap = (HashMap<String, Argument>) upMap.clone();
+        do {
+            pulled = false;
+            for (String key : upMap.keySet()) {
+                Argument arg = pull(tempMap, downMap, key);
+                tempMap.put(key, arg);
+            }
+        } while (pulled);
+        upMap = tempMap;
+        return upMap;
+   }
+ 
         
-        return true;
+    public Argument pull(HashMap<String, Argument> upMap, HashMap<String, Argument> downMap, String key) {
+        System.out.println("==== upMap: "+upMap+" downMap: "+downMap+" var: "+key);
+        //if (!upMap.containsKey(key)) return pull(downMap, downMap, key);
+        switch (upMap.get(key).getClass().getSimpleName()) {
+            
+            case "Variable" :
+                Variable var = (Variable) upMap.get(key);
+                if (!upMap.containsKey(var.name)) {
+//                    System.out.println("==== upMap: "+upMap+" downMap: "+downMap+" var: "+var.name);
+                    if (downMap.containsKey(var.name)) {
+                        Argument arg = pull(downMap, downMap, var.name);
+                        pulled = true;
+                        upMap.put(var.name, arg);
+                        return arg;
+                    }
+                }                    
+                return var;
+            case "List" :
+                List list = (List) upMap.get(key);
+                List newList = new List();
+                for (Argument arg : list.args) {
+                    if (arg.getClass().getSimpleName().equals("Variable")) {
+                        Variable var1 = (Variable) arg;
+                        Argument arg1;
+                        if (upMap.containsKey(var1.name)) {
+                            arg1 = pull(upMap, downMap, var1.name);
+                        } else if (downMap.containsKey(var1.name)) {
+                            arg1 = pull(downMap, downMap, var1.name);
+                        } else {
+                            arg1 = var1;
+                        }
+                        newList.addArgument(arg1);
+                    } else {
+                        newList.addArgument(arg);
+                    }
+                }
+                return newList;
+            case "Structure" :   
+                Structure structure = (Structure) upMap.get(key);
+                Structure newStructure = new Structure(structure.functor);
+                for (Argument arg : structure.args) {
+                    if (arg.getClass().getSimpleName().equals("Variable")) {
+                        Variable var1 = (Variable) arg;
+                        Argument arg1;
+                        if (upMap.containsKey(var1.name)) {
+                            arg1 = pull(upMap, downMap, var1.name);
+                        } else if (downMap.containsKey(var1.name)) {
+                            arg1 = pull(downMap, downMap, var1.name);
+                        } else {
+                            arg1 = var1;
+                        }
+                        newStructure.addArgument(arg1);
+                    } else {
+                        newStructure.addArgument(arg);
+                    }
+                }
+                return newStructure;
+            
+             default :
+                return upMap.get(key);
+        }
     }
     
 //    public void filterMap() {
@@ -132,7 +204,7 @@ public class Unificator {
                     break;
                 case "List":
                     List argList=(List) arg;
-                    newArg=replaceVariables(argList);
+                    newArg=replaceVariables(argList); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     break;
                 case "Variable":
                     Variable var=(Variable) arg;
@@ -150,8 +222,6 @@ public class Unificator {
             }
             newStructure.addArgument(newArg);
         }
-//        System.out.println(toString());
-//        System.out.println("new structure ---------- "+newStructure);
         return newStructure;
     }
     
@@ -188,14 +258,15 @@ public class Unificator {
         Argument arg=map.get(rule.name);
         if (arg==null) {
             map.put(rule.name, query);
+            
             return true;
         } else {
             if (arg.getClass().getSimpleName().equals("Variable")) {
                 map.put(((Variable) arg).name,query);
-                map.put(rule.name,query);
                 return true;
             } else {
                 if (query.getClass().getSimpleName().equals("Variable")) {
+                    
                     map.put(((Variable) query).name, rule);
                 } else {
                     return unify(arg, query);
@@ -236,7 +307,7 @@ public class Unificator {
         switch (queryClassName) {
             case "List":
                 List qList=(List) query;
-                System.out.println("= == = mapa "+map+" unifying"+rule+qList);
+                System.out.println("= = = = mapa "+map+" unifying"+rule+qList);
                 int qSize=qList.args.size();
                 int rSize=rule.args.size();
                 boolean ok=true;
@@ -247,18 +318,19 @@ public class Unificator {
                     return ok;
                 }
                 if (rSize==0) return false;
-                boolean more=qSize>rSize; //true for bigger query list size
                 int min=Math.min(qSize,rSize);
                 
-                if (more&&(rule.args.get(min-1).getClass().getSimpleName().equals("Variable"))) { 
+                if ((qSize>rSize)&&(rule.args.get(min-1).getClass().getSimpleName().equals("Variable"))) { 
+                    if (rSize==1) return false;
                     System.out.println(rule.args.get(min-1)+"*");                   
                     List tail=new List(new LinkedList<Argument>(qList.args.subList(min-1, qSize))); 
                     ok=unifyVariable((Variable) rule.args.get(min-1), tail);
                     if (!ok) return false;
-                } else if (!more&&(qList.args.get(min-1).getClass().getSimpleName().equals("Variable"))) {
-                    System.out.println("**");
-                    List tail=new List((LinkedList<Argument>) rule.args.subList(min-1, rSize-1));
+                } else if ((qSize<rSize)&&(qList.args.get(min-1).getClass().getSimpleName().equals("Variable"))) {
+                    if (qSize==1) return false;
+                    List tail=new List(new LinkedList<Argument>( rule.args.subList(min-1, rSize-1)));
                     ok=unifyList(tail, (Variable) qList.args.get(min-1));
+                    System.out.println("**"+ok+" unifying "+tail+" and "+qList.args.get(min-1));
                     if (!ok) return false;
                 } else { 
                     return false;
@@ -300,7 +372,37 @@ public class Unificator {
          return this.hashCode()+" query: "+query+" map: "+map;
     }
 
-    private Argument replaceVariables(List argList) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Argument replaceVariables(List list) {
+        
+        List newList=new List();
+        for (Argument arg:  list.args) {
+            String aClassName=arg.getClass().getSimpleName();
+            Argument newArg=arg;
+            switch (aClassName) {
+                case "Structure":
+                    Structure argStr=(Structure) arg;
+                    newArg=replaceVariables(argStr);
+                    break;
+                case "List":
+                    List argList=(List) arg;
+                    newArg=replaceVariables(argList); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    break;
+                case "Variable":
+                    Variable var=(Variable) arg;
+                    newArg = map.get(var.name);
+                    if (newArg==null) {
+                        String newName="_"+var.name;
+                        while (map.get(newName)!=null) {
+                            newName="_"+newName;
+                        }
+                        newArg = new Variable(newName);
+                        map.put(var.name, newArg);
+                    } else {
+                        
+                    }
+            }
+            newList.addArgument(newArg);
+        }
+        return newList;
     }
 }

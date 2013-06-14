@@ -1,1 +1,1 @@
-ishello(['hi','hello','hello']).
+ishello([A]).

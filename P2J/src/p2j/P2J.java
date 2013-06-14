@@ -33,8 +33,27 @@ public class P2J {
         Unificator unificator = new Unificator(query);
         Unificator.setProgram(program);
         boolean result = unificator.unifyProgram();
+        System.out.println(unificator.getMap());
+        System.out.println();
         if (result) {
-            System.out.println("***\n"+unificator.getMap());
+            System.out.println(query);
+            for (Argument arg : query.args) {
+                if (arg.getClass().getSimpleName().equals("Variable")) {
+                    Variable var = (Variable) arg;
+                    if (unificator.getMap().containsKey(var.name)) {
+                        Variable newVar = var;
+                        Argument newArg = unificator.getMap().get(newVar.name);
+                        while ((unificator.getMap().containsKey(newVar.name))
+                                &&(unificator.getMap().get(newVar.name).getClass().getSimpleName().equals("Variable"))) {
+                            
+                            newArg = unificator.getMap().get(newVar.name);
+                            newVar = (Variable) newArg;
+                        }
+                        unificator.getMap().put(var.name, newArg);
+                        System.out.println(var.name+" = "+newArg.toString());
+                    }
+                }
+            }    
         }
         System.out.println(result);
     }

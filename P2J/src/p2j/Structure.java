@@ -41,7 +41,7 @@ class Structure extends Argument {
                                 args.add(new Variable(t.getText()));
                                 break;
                             case 3: 
-                                args.add(new Number(Integer.decode(t.getText())));
+                                args.add(new Number(t.getText()));
                                 break;
                             case 13:
                                 args.add(new ArgString(t.getText()));

@@ -13,6 +13,12 @@ public class List extends Argument {
     List(LinkedList<Argument> list) {
         args=(LinkedList<Argument>) list.clone();
     }
+    public List() {
+        args = new LinkedList<Argument>();
+    }
+    public void addArgument(Argument arg) {
+        args.add(arg);
+    }
     List(ListContext ctx) {
         args=new LinkedList<Argument>();
             int chNum=ctx.getChildCount();
@@ -46,7 +52,7 @@ public class List extends Argument {
                                 args.add(new Variable(t.getText()));
                                 break;
                             case 3: 
-                                args.add(new Number(Integer.decode(t.getText())));
+                                args.add(new Number(t.getText()));
                                 break;
                             case 13:                               
 //                                System.out.println("* * *");
