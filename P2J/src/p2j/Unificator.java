@@ -59,6 +59,7 @@ public class Unificator {
             }
             
             map =resolveUp(map,tempMap);
+            //pullUpVariables();
             //map = resolve(map, resolveUp(map,tempMap));
             if (map==null) return false;
             //filterMap();
@@ -67,10 +68,95 @@ public class Unificator {
                     map.put(key, tempMap.get(key));
                 }
             }
+            //pullUpVariables();
             return ok;   
         }
         return false;
     }
+    
+    public void pullUpVariables() {
+        
+        HashMap<String, Argument> tempMap = (HashMap<String, Argument>) map.clone();
+        for (String string : map.keySet()) {
+            
+            Argument arg = map.get(string);
+            if (arg.getClass().getSimpleName().equals("Variable")) {
+
+                tempMap.put(string, pullUpVariable((Variable) arg));
+            }
+            
+        }
+        map = tempMap;
+    }
+    
+    public Argument pullUpVariable(Variable var) {
+        if (!map.containsKey(var.name)) return var;
+        Argument arg = map.get(var.name);
+        if (arg.getClass().getSimpleName().equals("Variable")) {
+            return pullUpVariable((Variable) arg);
+        } else if (arg.getClass().getSimpleName().equals("List")) {
+            return pullUpList((List)arg);
+        } else if (arg.getClass().getSimpleName().equals("Structure")) {
+            return pullUpStructure((Structure) arg);
+        } else  {
+            return arg;
+        }
+    }
+    
+    public List pullUpList(List list) {
+        
+        if (list.args.isEmpty()) {
+            return list;
+        }
+        List newList = new List();
+        for (Argument arg : list.args) {
+            Argument newArg;
+            switch (arg.getClass().getSimpleName()) {
+                case "Variable" :
+                    newArg = pullUpVariable((Variable) arg);
+                    break;
+                case "Structure" :
+                    newArg = pullUpStructure((Structure) arg);
+                    break;
+                case "List" :
+                    newArg = pullUpList((List) arg);
+                    break;
+                default :
+                    newArg = arg;
+            }
+            newList.addArgument(newArg);
+        }
+        return newList;
+    }
+    
+    public Structure pullUpStructure(Structure structure) {
+        
+        if (structure.args.isEmpty()) {
+            return structure;
+        }
+        Structure newStructure = new Structure(structure.functor);
+        for (Argument arg : structure.args) {
+            Argument newArg;
+            switch (arg.getClass().getSimpleName()) {
+                case "Variable" :
+                    System.out.println(structure+" "+arg);
+                    newArg = pullUpVariable((Variable) arg);
+                    
+                    break;
+                case "Structure" :
+                    newArg = pullUpStructure((Structure) arg);
+                    break;
+                case "List" :
+                    newArg = pullUpList((List) arg);
+                    break;
+                default :
+                    newArg = arg;
+            }
+            newStructure.addArgument(newArg);
+        }
+        return newStructure;
+    }
+    
     
     public static HashMap<String, Argument> resolve(HashMap<String, Argument> prevMap, HashMap<String, Argument> laterMap) {
 //        System.out.println("*** prev: "+prevMap+" later: "+laterMap+" ***");
@@ -204,7 +290,7 @@ public class Unificator {
                     break;
                 case "List":
                     List argList=(List) arg;
-                    newArg=replaceVariables(argList); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    newArg=replaceVariables(argList);
                     break;
                 case "Variable":
                     Variable var=(Variable) arg;
@@ -296,7 +382,7 @@ public class Unificator {
                 ArgString qArgString=(ArgString) query;
                 return qArgString.string.equals(rule.string);
             case "Variable":
-                //Добавить переменную в стек
+                map.put(((Variable) query).name, rule);
                 return true; 
         }
         return false;

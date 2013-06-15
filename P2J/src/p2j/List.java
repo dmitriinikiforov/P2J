@@ -10,13 +10,18 @@ import p2j.PrologParser.TailContext;
 
 public class List extends Argument {
     LinkedList<Argument> args;
-    List(LinkedList<Argument> list) {
-        args=(LinkedList<Argument>) list.clone();
+    public List(LinkedList<Argument> list) {
+        args= (LinkedList<Argument>) list.clone();
     }
     public List() {
-        args = new LinkedList<Argument>();
+        args=new LinkedList<>();
     }
-    public void addArgument(Argument arg) {
+    public List update(Argument arg) {
+        if (arg==null) return this;
+        this.args.add(arg);
+        return this;
+    }
+     public void addArgument(Argument arg) {
         args.add(arg);
     }
     List(ListContext ctx) {
@@ -83,4 +88,15 @@ public class List extends Argument {
         sb.append("]");
         return sb.toString();
     }        
+
+    @Override
+    public String javaCode() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("new List()");
+        if (args==null) return sb.toString();
+        for (Argument arg:args) {
+            sb.append(".update(").append(arg.javaCode()).append(")");
+}
+        return sb.toString();
+    }
 }

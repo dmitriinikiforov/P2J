@@ -7,11 +7,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import p2j.PrologParser.ListContext;
 import p2j.PrologParser.StructureContext;
 
-class Structure extends Argument {
+public class Structure extends Argument {
     String functor;
     ArrayList<Argument> args;
     
-    Structure(String functor) {
+    public Structure(String functor) {
         this.functor=functor;
     }
     void addArgument (Argument arg) {
@@ -19,6 +19,14 @@ class Structure extends Argument {
             args=new ArrayList<Argument>();            
         }
         args.add(arg);
+    }
+    public Structure update (Argument arg) {
+        if (arg==null) return this;
+        if (this.args==null) {
+            this.args=new ArrayList<Argument>();            
+        }
+        this.args.add(arg);
+        return this;
     }
     
     Structure (StructureContext ctx) {
@@ -71,6 +79,16 @@ class Structure extends Argument {
             sb.append(" ");
         }
         sb.append(")");
+        return sb.toString();
+    }
+
+    @Override
+    public String javaCode() {        
+        StringBuilder sb=new StringBuilder();
+        sb.append("new Structure(\"").append(functor).append("\")");
+        for (Argument arg:args) {
+            sb.append(".update(").append(arg.javaCode()).append(")");
+}
         return sb.toString();
     }
 }

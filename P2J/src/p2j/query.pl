@@ -1,1 +1,1 @@
-ishello([A]).
+sum(s(R),s(X),T).

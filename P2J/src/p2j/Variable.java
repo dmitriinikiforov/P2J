@@ -1,8 +1,8 @@
 package p2j;
 
-class Variable extends Argument {
+public class Variable extends Argument {
     String name;
-    Variable(String text) {
+    public Variable(String text) {
         name=text;
     }
 
@@ -10,5 +10,10 @@ class Variable extends Argument {
     public String toString() {
         return name;
     }
+    
+    @Override
+    public String javaCode() {
+        return "new Variable(\""+name+"\")";
+}
     
 }

@@ -49,4 +49,9 @@ public class Number extends Argument {
         return ""+value;
     }
     
+    @Override
+    public String javaCode() {
+        return "new p2j.Number("+value+")";
+}
+    
 }

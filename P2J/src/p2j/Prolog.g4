@@ -27,3 +27,4 @@ LIST_BEGIN: '[';
 LIST_LINE: '|';
 LIST_END: ']';
 NEWLINE: '\r'? '\n' ;
+WS  :   [ \t]+ -> skip ;

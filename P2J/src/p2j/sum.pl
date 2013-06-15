@@ -3,7 +3,7 @@ sum(s(A),B,s(C)):-sum(A,B,C).
 hello('hello').
 hello('hi').
 hello('bonjour').
-ishello([]).
 ishello(A):-hello(A).
+ishello([]).
 ishello([A|T]):-hello(A),ishello(T).
 test:-ishello(['hello','hi']).

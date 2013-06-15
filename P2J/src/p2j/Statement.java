@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import p2j.PrologParser.StatementContext;
 import p2j.PrologParser.StructureContext;
 
-class Statement {
+public class Statement {
     Structure left;
     ArrayList<Structure> right;
     final void addStructure(Structure s) {
@@ -18,7 +18,15 @@ class Statement {
             right.add(s); 
         }
     }
-    Statement (StatementContext sc) {
+    public Statement () {
+    }
+    
+    public Statement update(Structure s) {
+        if (s==null) return this;
+        this.addStructure(s);
+        return this;
+    }
+    public Statement (StatementContext sc) {
         int chNum=sc.getChildCount();
         for (int i=0; i<chNum; i++) {
             ParseTree ch=sc.getChild(i);
@@ -28,7 +36,7 @@ class Statement {
             }            
         }
     }
-    Statement (Structure left, ArrayList<Structure> right) {
+    public Statement (Structure left, ArrayList<Structure> right) {
         this.left=left;
         this.right=right;
     }
@@ -47,4 +55,13 @@ class Statement {
         return sb.toString();
     }
     
+    public String javaCode() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("new Statement()").append(".update(").append(left.javaCode()).append(")");
+        if (right==null) return sb.toString();
+        for (Structure str:right) {
+            sb.append(".update(").append(str.javaCode()).append(")");
+}
+        return sb.toString();
+    }
 }

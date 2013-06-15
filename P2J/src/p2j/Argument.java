@@ -1,6 +1,7 @@
 package p2j;
 
-abstract class Argument {
+public abstract class Argument {
    @Override
    abstract public String toString();
+   abstract public String javaCode();   
 }

@@ -15,5 +15,10 @@ public class ArgString extends Argument{
         return string; 
     }
     
+    @Override
+    public String javaCode() {
+        return "new ArgString(\""+string+"\")";
+    }
+    
     
 }
