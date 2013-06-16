@@ -4,8 +4,10 @@
  */
 package p2j;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -125,7 +127,7 @@ public class P2JFrame extends javax.swing.JFrame {
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         jTextArea1.setRows(5);
-        jTextArea1.setText("Данная программа может выполнять функции компилятора и нтерпретатора.\nДля начала работы выберите файл, в котором хранится программа на языке ProLog.\nВыбрав файл, Вы можете скомпилировать его в исполняемый .jar файл.\nТакже Вы можете выбрать файл с запросом на языке ProLog");
+        jTextArea1.setText("Данная программа может выполнять функции компилятора и интерпретатора.\nДля начала работы выберите файл, в котором хранится программа на языке ProLog.\nВыбрав файл, Вы можете скомпилировать его в исполняемый .jar файл.\nТакже Вы можете выбрать файл с запросом на языке ProLog");
         jScrollPane3.setViewportView(jTextArea1);
 
         jButton1.setText("Run");
@@ -188,10 +190,10 @@ public class P2JFrame extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jScrollPane2)))
+                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -236,9 +238,33 @@ public class P2JFrame extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // compile
-        jTextArea1.setText("Compiled");
+        String[] args={arg1};        
+        System.out.println("arg1="+arg1);
+        jTextArea1.setText(P2J.textSB.toString());
         try {
-            Runtime.getRuntime().exec("javac "+arg1);
+            P2J.main(args);
+            try {
+                Runtime rt=Runtime.getRuntime();
+                String[] env={"CLASSPATH=P2J.jar;lib\\antlr-4.0-complete.jar"};
+                Process ps=rt.exec("javac Main.java",env);
+                compiled=true;
+        System.out.println("!");
+                BufferedReader br=new BufferedReader(new InputStreamReader(ps.getInputStream()));
+                String line;
+                while((line = br.readLine())!=null) {
+                    System.out.println(line);
+                    P2J.textSB.append(line).append("\n");
+                }
+                br=new BufferedReader(new InputStreamReader(ps.getErrorStream()));                
+                while((line=br.readLine())!=null) {
+                    System.out.println(line);
+                    P2J.textSB.append(line).append("\n");
+                }
+        System.out.println("!");
+                jTextArea1.setText(P2J.textSB.toString());
+                P2J.textSB = new StringBuffer();
+            } catch (IOException ex) {
+            }
         } catch (IOException ex) {
             Logger.getLogger(P2JFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -258,7 +284,7 @@ public class P2JFrame extends javax.swing.JFrame {
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // enter text query
         if (!jTextField1.getText().isEmpty()) {
-            jButton5.setEnabled(true);
+            jButton1.setEnabled(true);
         }
     }//GEN-LAST:event_jTextField1ActionPerformed
 
@@ -266,6 +292,8 @@ public class P2JFrame extends javax.swing.JFrame {
         // program file choose
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setFileFilter(new PrologFileFilter());
+        fileChooser.setMultiSelectionEnabled(false);
         int returnVal = fileChooser.showOpenDialog(this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -276,7 +304,7 @@ public class P2JFrame extends javax.swing.JFrame {
             jRadioButton1.setEnabled(true);
             jRadioButton2.setEnabled(true);
             arg1 = programFile.getAbsolutePath();
-            
+            compiled = false;            
         } 
     
     }//GEN-LAST:event_jButton5ActionPerformed
@@ -295,6 +323,8 @@ public class P2JFrame extends javax.swing.JFrame {
         // query file chooser
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setFileFilter(new PrologFileFilter());
+        fileChooser.setMultiSelectionEnabled(false);
         int returnVal = fileChooser.showOpenDialog(this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -308,10 +338,26 @@ public class P2JFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // run
-        String [] args = {arg1, arg2};
+//        if (compiled) {
+//             try {
+//                  String[] env={"CLASSPATH=C:\\Users\\Dima\\Documents\\NetBeansProjects\\P2J\\P2J\\dist\\P2J.jar;C:\\Users\\Dima\\Documents\\NetBeansProjects\\P2J\\P2J\\dist\\antlr-4.0-complete.jar"};
+//            Process ps=Runtime.getRuntime().exec("cmd /k java C:\\Users\\Dima\\Documents\\NetBeansProjects\\P2J\\P2J\\Main "+arg2+" >out.txt",env);
+//            BufferedReader br=new BufferedReader(new InputStreamReader(ps.getInputStream()));
+//            String line;
+//            while((line=br.readLine())!=null) {
+//                P2J.textSB.append(line).append("\n");
+//            }
+//            jTextArea1.setText(P2J.textSB.toString());
+//            P2J.textSB = new StringBuffer();
+//        } catch (IOException ex) {
+//            Logger.getLogger(P2JFrame.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        } else {
         if (jRadioButton2.isSelected()) {
             if (!jTextField1.getText().equals("")) {
                 try {
+                    arg2 = jTextField1.getText();
+                    String [] args = {arg1, arg2};
                     P2J.main(args);
                     jTextArea1.setText(P2J.textSB.toString());
                     P2J.textSB = new StringBuffer();
@@ -321,19 +367,17 @@ public class P2JFrame extends javax.swing.JFrame {
             }    
         } else {
             try {
+                String [] args = {arg1, arg2};
                 P2J.main(args);
+                jTextArea1.setText(P2J.textSB.toString());
+                P2J.textSB = new StringBuffer();
             } catch (IOException ex) {
                 Logger.getLogger(P2JFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-            jTextArea1.setText(P2J.textSB.toString());
-            P2J.textSB = new StringBuffer();
-        }
-        
-//        try {
-//            Runtime.getRuntime().exec("java Main "+arg2);
-//        } catch (IOException ex) {
-//            Logger.getLogger(P2JFrame.class.getName()).log(Level.SEVERE, null, ex);
+            
 //        }
+        
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -371,12 +415,35 @@ public class P2JFrame extends javax.swing.JFrame {
         });
     }
     
+    class PrologFileFilter extends javax.swing.filechooser.FileFilter {
+
+        
+        
+        @Override
+        public String getDescription() {
+            return "ProLog files";
+        }
+        
+        @Override
+        public boolean accept(File pathname) {
+        
+            if ((pathname.toString().endsWith(".pl"))||(!pathname.toString().contains("."))) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        
+    }
+    
     
     
     private File programFile;
     private File queryFile;
     private String arg1;
     private String arg2;
+    private boolean compiled;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;

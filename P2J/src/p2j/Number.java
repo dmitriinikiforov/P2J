@@ -2,11 +2,15 @@ package p2j;
 
 public class Number extends Argument {
     double value;
+    public Number (double val) {
+        value=val;
+    }
     Number(String decode) {
+        System.out.println(decode);
         String ints = "";
         int i=0;
         char c = decode.charAt(i);
-        while ((decode.length() < i)&&((c!='e')||(c!='E')||(c!='.'))) {
+        while ((decode.length() > i)&&((c!='e')||(c!='E')||(c!='.'))) {
             c = decode.charAt(i);
             ints = ints + c;
             i++;
@@ -16,7 +20,7 @@ public class Number extends Argument {
         } else {
             value = Double.parseDouble(ints);
         }
-        
+        if (i == decode.length()) return;
         c = decode.charAt(i);
         if (c=='.') {
             String doubles = "";
@@ -34,6 +38,7 @@ public class Number extends Argument {
         if (c == 'x') {
             i++;
             i++;
+            i++;
         }
         
         
@@ -41,6 +46,7 @@ public class Number extends Argument {
             int power = Integer.parseInt(decode.substring(i, decode.length()));
             value = value * Math.pow(10, power);
         }
+        System.out.println(value);
         //value=decode.intValue();
     }
 

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -26,17 +27,18 @@ public class P2J {
         if (args.length==1) { //compile
             String sourceName=args[0];
             File source=new File(sourceName);
-            if (!source.exists()) {
-                System.out.println("File \""+sourceName+"\" doesn't exist");
-                return;
-            }
-            if (!source.canRead()) {
-                System.out.println("File \""+sourceName+"\" cannot be read");
-                return;
+            CharStream cs;
+            if (source.exists()) {
+                cs=new ANTLRFileStream(args[0]);
+                if (!source.canRead()) {
+                    System.out.println("File \""+sourceName+"\" cannot be read");
+                }
+            } else {
+                cs=new ANTLRInputStream(args[0]);
             }
             try {
                 
-                Compiler.compile(args[0]);
+                Compiler.compile(cs);
             } catch (Exception e) {
                 System.out.println("Something got wrong");
                 e.printStackTrace();
@@ -57,14 +59,16 @@ public class P2J {
                 System.out.println("File \""+programName+"\" cannot be read");
                 return;
             }
-             if (!queryFile.exists()) {
-                System.out.println("File \""+queryName+"\" doesn't exist");
-                return;
-            }
-            if (!queryFile.canRead()) {
-                System.out.println("File \""+queryName+"\" cannot be read");
-                return;
-            }
+            CharStream cs;
+             if (queryFile.exists()) {      
+                 cs=new ANTLRFileStream(queryName);                 
+                if (!queryFile.canRead()) {
+                    System.out.println("File \""+queryName+"\" cannot be read");
+                    return;
+                }
+            } else {         
+                cs=new ANTLRInputStream(queryName);
+             }
             try {
             //interpreter
             PrologLexer pl=new PrologLexer((CharStream) new ANTLRFileStream(args[0])); 
@@ -73,7 +77,7 @@ public class P2J {
             pp.addParseListener(listener);
             pp.program();
 
-            pl=new PrologLexer((CharStream) new ANTLRFileStream(args[1])); 
+            pl=new PrologLexer(cs); 
             pp=new PrologParser(new CommonTokenStream(pl));
             QueryListener qListener=new QueryListener();
             pp.addParseListener(qListener);
