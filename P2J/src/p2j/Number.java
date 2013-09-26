@@ -6,7 +6,6 @@ public class Number extends Argument {
         value=val;
     }
     Number(String decode) {
-        System.out.println(decode);
         String ints = "";
         int i=0;
         char c = decode.charAt(i);
@@ -46,8 +45,6 @@ public class Number extends Argument {
             int power = Integer.parseInt(decode.substring(i, decode.length()));
             value = value * Math.pow(10, power);
         }
-        System.out.println(value);
-        //value=decode.intValue();
     }
 
     @Override
